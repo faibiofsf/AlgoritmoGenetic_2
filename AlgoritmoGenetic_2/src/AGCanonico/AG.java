@@ -272,7 +272,7 @@ class AG implements Runnable {
 			    "Fitness", ds, PlotOrientation.VERTICAL, true, true, false);
 		OutputStream arq;
 		try {
-			arq = new FileOutputStream(this.nomeGrafico+ ".png");
+			arq = new FileOutputStream("AlgoritmoGenetic_2\\"+this.nomeGrafico+ ".png");
 			ChartUtilities.writeChartAsPNG(arq, grafico, 550, 400);
 			arq.close();
 		} catch (IOException e) {
