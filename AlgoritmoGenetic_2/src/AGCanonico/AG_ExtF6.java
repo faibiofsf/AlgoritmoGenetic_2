@@ -1,85 +1,79 @@
 package AGCanonico;
 
-import java.io.FileOutputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.stream.DoubleStream;
 
-import javax.swing.JPanel;
-
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
 
-class AG_ExtF6 implements Runnable {
+class AG_ExtF6  {
 
-	private ArrayList<Individuo> populacao;
+	public ArrayList<IndividuoF6> populacao;
 	private double probCruz, probMut;
 	private int numeroIteracoes, tamanhoPopulacao, nBits, precisao;
-	public Individuo melhorIndividuo;
+	public IndividuoF6 melhorIndividuo;
 	public ArrayList<Integer> fitnessPorIteracoes;
 	public ArrayList<Double> mediaFitnessPopulacao;
-	private DefaultCategoryDataset ds;
-	private JFreeChart grafico;
-	private String nomeGrafico, tituloGrafico, iteracaoFinal = "";
 	private Random random;
+	public String saidaMelhorIndividuo, saidaIndividuos;
+	public double[] execMediaPop, execMelhosInd;
 
 	// Construtor Entrada
-	public AG_ExtF6(int tamanhoPopulacao, int numeroIteracoes, double probCruz, double probMut, String tituloGrafico,
-			String nomeGrafico, int nBits, int precisao) {
+	public AG_ExtF6(int tamanhoPopulacao, int numeroIteracoes, double probCruz, double probMut, int nBits, int precisao) {
 		this.numeroIteracoes = numeroIteracoes;
 		this.tamanhoPopulacao = tamanhoPopulacao;
 		this.probCruz = probCruz;
 		this.probMut = probMut;
-		this.melhorIndividuo = new Individuo();
+		this.melhorIndividuo = new IndividuoF6();
 		this.fitnessPorIteracoes = new ArrayList<Integer>();
 		this.mediaFitnessPopulacao = new ArrayList<Double>();
-		this.ds = new DefaultCategoryDataset();
-		this.nomeGrafico = nomeGrafico;
-		this.tituloGrafico = tituloGrafico;
 		this.nBits = nBits;
 		this.precisao = precisao;
+		random = new Random();
+		execMediaPop = new double[this.numeroIteracoes];
+		execMelhosInd = new double[this.numeroIteracoes];
 	}
 
 	// Iniciar
 	@SuppressWarnings("unchecked")
 	public void run() {
-		// Iniciar PopulaÃ§Ã£o
-		this.populacao = this.populacaoInicialReais();
 
 		// Avaliar Populacao
-		for (Individuo individuo : this.populacao) {
+		for (IndividuoF6 individuo : this.populacao) {
 			avalia(individuo);
 		}
-		
-		// Ranqueia populaÃ§Ã£o
+
+		// Ranqueia populaÃƒÂ§ÃƒÂ£o
 		this.rank();
 
-		random = new Random(123456);
+		
 
 		int iteracao = 0;
 
 		while (this.numeroIteracoes > iteracao) {
 
-			ArrayList<Individuo> novaPopulacao = new ArrayList<Individuo>();
+			ArrayList<IndividuoF6> novaPopulacao = new ArrayList<IndividuoF6>();
 
 			while (novaPopulacao.size() < populacao.size()) {
 
 				// Selecinar cruzamento por Roleta
-				Individuo pai1 = this.selecionaPai();
-				Individuo pai2 = this.selecionaPai();
+				IndividuoF6 pai1 = this.selecionaPai();
+				IndividuoF6 pai2 = this.selecionaPai();
 
-				// Cruzamento dos pais de acordo com a probabilidade e MutaÃ§Ã£o
+				// Cruzamento dos pais de acordo com a probabilidade e
+				// MutaÃƒÂ§ÃƒÂ£o
 				// de acordo com probabilidade
 				if (random.nextDouble() <= this.probCruz) {
 					// Cruzamento
-					Individuo[] filhos = this.filhosCruzamento(pai1, pai2);
+					IndividuoF6[] filhos = this.filhosCruzamento(pai1, pai2);
 
 					// Mutacao de acordo com probabilidade
 					this.mutacao(filhos[0]);
@@ -92,12 +86,12 @@ class AG_ExtF6 implements Runnable {
 			}
 
 			this.populacao = null;
-			this.populacao = (ArrayList<Individuo>) novaPopulacao.clone();
+			this.populacao = (ArrayList<IndividuoF6>) novaPopulacao.clone();
 			novaPopulacao.clear();
 
 			double fitnessPopulacao = 0;
 			// Avaliar Nova Populacao
-			for (Individuo individuo : this.populacao) {
+			for (IndividuoF6 individuo : this.populacao) {
 				avalia(individuo);
 				fitnessPopulacao += (double) individuo.getFitness();
 			}
@@ -106,53 +100,51 @@ class AG_ExtF6 implements Runnable {
 			this.rank();
 
 			System.out.println("");
-			System.out.println("Iteraçao: " + iteracao);
+			System.out.println("IteraÃ§ao: " + iteracao);
 			double[] XY = this.converteBinarioEmReal(melhorIndividuo.getCromossomo());
-			System.out.println(
-					"Melhor Individuo: " + melhorIndividuo.getCromossomo() + ": " + XY[0] + " " + XY[1] + " : "+ melhorIndividuo.getFitness());
+			System.out.println("Melhor Individuo: " + melhorIndividuo.getCromossomo() + ": " + XY[0] + " " + XY[1]
+					+ " : " + melhorIndividuo.getFitness());
 
 			this.insereNoGrafico(fitnessPopulacao, iteracao);
 
-			/*
-			 * if (this.melhorIndividuo.getFitness() == objetivo.length()) {
-			 * insereNoGrafico(fitnessPopulacao, iteracao); if (iteracaoFinal.equals(""))
-			 * iteracaoFinal = "" + iteracao; // break; }
-			 */
-			/*
-			 * try { Thread.sleep(50);
-			 * 
-			 * } catch (InterruptedException e) { // TODO Auto-generated catch block
-			 * e.printStackTrace(); }
-			 */
 			iteracao++;
 
 		}
-
-		this.salvarGrafico("" + iteracao);
+		
 
 	}
 
 	private void insereNoGrafico(double fitnessPopulacao, int iteracao) {
 
-		ds.addValue((fitnessPopulacao / this.populacao.size()), "Media de Fitness da População", "" + iteracao);
-		ds.addValue(this.melhorIndividuo.getFitness(), "Fitness do Melhor Individuo", "" + iteracao);
+		//double[] XY = this.converteBinarioEmReal(melhorIndividuo.getCromossomo());
+		
+		execMelhosInd[iteracao] = melhorIndividuo.getFitness();
+		
+		//gravarArqMelhorInd.printf("\n"+iteracao + ";" + melhorIndividuo.getFitness());
+
+		execMediaPop[iteracao] = fitnessPopulacao / this.populacao.size();
+		
+		//gravarArqMediaInd.printf("\n" + iteracao +";"+ (fitnessPopulacao / this.populacao.size()));
+
 	}
 
-	// Gerar populaÃ§Ã£o inicial de numeros reais
-	private ArrayList<Individuo> populacaoInicialReais() {
+	// Gerar populaÃƒÂ§ÃƒÂ£o inicial de numeros reais
+	private ArrayList<IndividuoF6> populacaoInicialReais(int tamanhoPopulacao) {
 
-		ArrayList<Individuo> populacaoInicial = new ArrayList<Individuo>();
+		ArrayList<IndividuoF6> populacaoInicial = new ArrayList<IndividuoF6>();
 
 		DoubleStream dsX = new Random().doubles(-100, 100);
-		double[] numerosX = dsX.limit(this.tamanhoPopulacao).toArray();
-		
-		DoubleStream dsY = new Random().doubles(-100, 100);
-		double[] numerosY = dsY.limit(this.tamanhoPopulacao).toArray();
+		double[] numerosX = dsX.limit(tamanhoPopulacao).toArray();
 
-		for (int i = 0; i < numerosX.length; i++) {
+		DoubleStream dsY = new Random().doubles(-100, 100);
+		double[] numerosY = dsY.limit(tamanhoPopulacao).toArray();
+
+		for (int i = 0; i < tamanhoPopulacao; i++) {
 			String cromossomo = converteRealEmBinario(numerosX[i]) + converteRealEmBinario(numerosY[i]);
 
-			Individuo individuo = new Individuo(cromossomo);
+			IndividuoF6 individuo = new IndividuoF6(cromossomo);
+			double[] XY = { numerosX[i], numerosY[i] };
+			individuo.setValorReal(XY);
 
 			avalia(individuo);
 
@@ -161,24 +153,51 @@ class AG_ExtF6 implements Runnable {
 
 		return populacaoInicial;
 	}
+	
+	// Gerar populaÃƒÂ§ÃƒÂ£o inicial de numeros reais por arquivo
+		private ArrayList<IndividuoF6> populacaoInicialReais(int tamanhoPopulacao, Scanner f) {
 
-	// SeleÃ§Ã£o
-	private Individuo selecionaPai() {
+			ArrayList<IndividuoF6> populacaoInicial = new ArrayList<IndividuoF6>();
+
+			
+
+			for (int i = 0; i < tamanhoPopulacao; i++) {
+				
+				String[] s = f.nextLine().split(" ");
+				double x = Double.parseDouble(s[0]);
+				double y = Double.parseDouble(s[1]);
+				
+				String cromossomo = converteRealEmBinario(x) + converteRealEmBinario(y);
+
+				IndividuoF6 individuo = new IndividuoF6(cromossomo);
+				double[] XY = { x, y };
+				individuo.setValorReal(XY);
+
+				avalia(individuo);
+
+				populacaoInicial.add(individuo);
+			}
+
+			return populacaoInicial;
+		}
+
+	// SeleÃƒÂ§ÃƒÂ£o
+	private IndividuoF6 selecionaPai() {
 
 		int somatorio = 0;
 		double probabilidades = 0.0;
-		Individuo pai = null;
+		IndividuoF6 pai = null;
 
-		for (Individuo individuo : this.populacao) {
+		for (IndividuoF6 individuo : this.populacao) {
 			somatorio += individuo.getFitness();
 		}
 
 		// Roleta
 		double ponteiro = random.nextDouble();
 
-		for (Individuo individuo : this.populacao) {
+		for (IndividuoF6 individuo : this.populacao) {
 			if (ponteiro <= ((double) individuo.getFitness() / (double) somatorio) + probabilidades) {
-				pai = new Individuo(individuo.getFitness(), individuo.getCromossomo());
+				pai = new IndividuoF6(individuo.getFitness(), individuo.getCromossomo());
 				break;
 			} else {
 				probabilidades += ((double) individuo.getFitness() / (double) somatorio);
@@ -189,10 +208,10 @@ class AG_ExtF6 implements Runnable {
 	}
 
 	// Cruzamento
-	private Individuo[] filhosCruzamento(Individuo pai1, Individuo pai2) {
+	private IndividuoF6[] filhosCruzamento(IndividuoF6 pai1, IndividuoF6 pai2) {
 
-		Individuo filho1 = new Individuo();
-		Individuo filho2 = new Individuo();
+		IndividuoF6 filho1 = new IndividuoF6();
+		IndividuoF6 filho2 = new IndividuoF6();
 
 		// Random r = new Random();
 		int posicao = random.nextInt(pai1.getCromossomo().length());
@@ -210,13 +229,13 @@ class AG_ExtF6 implements Runnable {
 		filho1.setCromossomo(crom1);
 		filho2.setCromossomo(crom2);
 
-		Individuo[] filhos = { filho1, filho2 };
+		IndividuoF6[] filhos = { filho1, filho2 };
 
 		return filhos;
 	}
 
-	// MutaÃ§Ã£o
-	private void mutacao(Individuo filho) {
+	// MutaÃƒÂ§ÃƒÂ£o
+	private void mutacao(IndividuoF6 filho) {
 
 		char[] crom = filho.getCromossomo().toCharArray();
 
@@ -237,14 +256,15 @@ class AG_ExtF6 implements Runnable {
 	}
 
 	// Avaliacao
-	private void avalia(Individuo individuo) {
+	private void avalia(IndividuoF6 individuo) {
 		String cromossomo = individuo.getCromossomo();
-		
+
 		double[] valoresXY = converteBinarioEmReal(cromossomo);
-		
+
 		double pontuacao = ScafferF6(valoresXY[0], valoresXY[1]);
-		
+
 		individuo.setFitness(pontuacao);
+		individuo.setValorReal(valoresXY);
 	}
 
 	// Scaffer's F6 function
@@ -265,36 +285,15 @@ class AG_ExtF6 implements Runnable {
 		return (sum);
 	}
 
-	// Ranqueamento da populaÃ§Ã£o
+	// Ranqueamento da populaÃƒÂ§ÃƒÂ£o
 	public void rank() {
 
 		Collections.sort(this.populacao);
 
 		// if (this.melhorIndividuo.getFitness() <
 		// populacao.get(0).getFitness()){
-		this.melhorIndividuo = new Individuo(populacao.get(0).getFitness(), populacao.get(0).getCromossomo());
+		this.melhorIndividuo = new IndividuoF6(populacao.get(0).getFitness(), populacao.get(0).getCromossomo());
 		// }
-	}
-
-	public JPanel getPanel() {
-		this.grafico = ChartFactory.createLineChart(this.tituloGrafico, "Iteração", "Fitness", ds,
-				PlotOrientation.VERTICAL, true, true, false);
-		return new ChartPanel(this.grafico);
-	}
-
-	private void salvarGrafico(String encerramento) {
-		this.grafico = ChartFactory.createLineChart(
-				this.tituloGrafico + "\nSolução encontrada na geração: " + this.iteracaoFinal, "Iteração", "Fitness",
-				ds, PlotOrientation.VERTICAL, true, true, false);
-		OutputStream arq;
-		try {
-			arq = new FileOutputStream("AlgoritmoGenetic_2\\" + this.nomeGrafico + ".png");
-			ChartUtilities.writeChartAsPNG(arq, grafico, 680, 480);
-			arq.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 	public String converteRealEmBinario(double numero) {
@@ -329,14 +328,14 @@ class AG_ExtF6 implements Runnable {
 	}
 
 	public double[] converteBinarioEmReal(String binario) {
-		
+
 		String binX = String.copyValueOf(binario.toCharArray(), 0, (binario.length() / 2) - 1);
-		
-		String binY = String.copyValueOf(binario.toCharArray(), (binario.length() / 2), (binario.length() / 2)-1);
-		
+
+		String binY = String.copyValueOf(binario.toCharArray(), (binario.length() / 2), (binario.length() / 2) - 1);
+
 		String binX1 = String.copyValueOf(binX.toCharArray(), 1, (binX.length() - 1));
 		String binY1 = String.copyValueOf(binY.toCharArray(), 1, (binY.length() - 1));
-		
+
 		double numeroX = Integer.parseInt(binX1, 2);
 		double numeroY = Integer.parseInt(binY1, 2);
 
@@ -357,60 +356,128 @@ class AG_ExtF6 implements Runnable {
 	public static void main(String args[]) {
 
 		double[] mutacoes = { 0.01 };
+		double[] cruzamentos = { 0.75 };
 		int[] populacoes = { 50 };
+		int nIteracoes = 500;
 
-		for (int j = 0; j < populacoes.length; j++) {
-			for (int j2 = 0; j2 < mutacoes.length; j2++) {
-				String titulo = "Evolução do AG com parametros de Mut: " + mutacoes[j2] + ", População: "
-						+ populacoes[j];
-				String nomeGrafico = "Mut-" + mutacoes[j2] + "_População-" + populacoes[j];
-				// AG_ExtF6 ag = new AG_ExtF6(populacoes[j], 500,palavras[i], .75, mutacoes[j2],
-				// titulo, nomeGrafico, 28, 6);
-				AG_ExtF6 ag = new AG_ExtF6(populacoes[j], 500, .75, mutacoes[j2], titulo, nomeGrafico, 28, 6);
-				Thread t = new Thread(ag);
-				// Cria a linha de execução
-				t.start(); // Ativa a thread } } }
+					// Populacao
+					for (int l = 0; l < 5; l++) {
 
-			}
-		}
+						FileWriter arqMediaInd = null, arqMelhorInd = null;
+						PrintWriter gravarArqMediaInd, gravarArqMelhorInd;
+						try {
+							arqMediaInd = new FileWriter("AlgoritmoGenetic_2\\pop"+l+"\\MediaPopulaco_pop " + l+".csv");
+							arqMelhorInd = new FileWriter("AlgoritmoGenetic_2\\pop"+l+"\\MelhorIndividuos_pop " + l+".csv");
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						gravarArqMediaInd = new PrintWriter(arqMediaInd);
+						gravarArqMelhorInd = new PrintWriter(arqMelhorInd);
+						
+						ArrayList<double[]> mediaPopExecs = new ArrayList<double[]>();
+						ArrayList<double[]> melhorIndExecs = new ArrayList<double[]>();
 
-		// 28 bits para representar os numero -100,100 com 6 casas decimais quando
-		// converter para real, considerar o piso igual a -100
+						// Execucoes da população
+						for (int k = 0; k < 5; k++) {
+							// 28 bits para representar os numero -100,100 com 6
+							// casas decimais
+							// quando converter para real, considerar o piso igual a
+							// -100
+							AG_ExtF6 ag = new AG_ExtF6(populacoes[0], nIteracoes, cruzamentos[0], mutacoes[0], 28, 6);
+
+							FileReader file = null;
+							try {
+								file = new FileReader("AlgoritmoGenetic_2\\PopulacoInicial_" + l +  " _Execucao.txt");
+							} catch (FileNotFoundException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							Scanner f = new Scanner(file);
+							ag.populacao = ag.populacaoInicialReais(populacoes[0], f);
+							f.close();
+							//String saidaIndividuos = "AlgoritmoGenetic_2\\pop"+l+"\\MediaPopulaco_pop " + l
+							//		+ "Execucao "+ k + ".csv";
+							//String melhoresIndividuos = "AlgoritmoGenetic_2\\pop"+l+"\\MelhorIndividuos_pop " + l
+							//		+ "Execucao" + k + ".csv";
+
+							//ag.saidaIndividuos = saidaIndividuos;
+							//ag.saidaMelhorIndividuo = melhoresIndividuos;
+
+							ag.run();
+							
+							mediaPopExecs.add(ag.execMediaPop);
+							melhorIndExecs.add(ag.execMelhosInd);
+							
+							//Thread t = new Thread(ag);
+							// Cria a linha de execuÃ§Ã£o
+							//t.start(); // Ativa a thread
+						}
+						gravarArqMediaInd.printf("iterações;E1;E2;E3;E4;E5");
+						gravarArqMelhorInd.printf("iterações;E1;E2;E3;E4;E5");
+						for (int i = 0; i < nIteracoes; i++) {
+							gravarArqMediaInd.printf("\n"+i + ";" + mediaPopExecs.get(0)[i]+";"+ mediaPopExecs.get(1)[i]+";"+ mediaPopExecs.get(2)[i]+";"+ mediaPopExecs.get(3)[i]+";"+ mediaPopExecs.get(4)[i]+";");
+							gravarArqMelhorInd.printf("\n"+i + ";" + melhorIndExecs.get(0)[i]+";"+ melhorIndExecs.get(1)[i]+";"+ melhorIndExecs.get(2)[i]+";"+ melhorIndExecs.get(3)[i]+";"+ melhorIndExecs.get(4)[i]+";");
+						}
+						
+						try {
+							
+							gravarArqMelhorInd.close();
+							arqMelhorInd.close();
+							gravarArqMediaInd.close();
+							arqMediaInd.close();
+							
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+
 
 		/*
-		 * AG ag = new AG(10, 1000, "1010101010101010", 1.0, 0.01, String titulo, String
-		 * nomeGrafico);
+		 * AG ag = new AG(10, 1000, "1010101010101010", 1.0, 0.01, String
+		 * titulo, String nomeGrafico);
 		 * 
-		 * JFrame frame = new JFrame("Gráfico de Linha do Algoritmo Genético");
+		 * JFrame frame = new
+		 * JFrame("GrÃ¡fico de Linha do Algoritmo GenÃ©tico");
 		 * frame.add(ag.getPanel());
 		 * 
 		 * frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); frame.pack();
 		 * frame.setSize(1024, 480); frame.setVisible(true);
 		 * 
-		 * Thread t = new Thread(ag); //Cria a linha de execução t.start(); //Ativa a
-		 * thread
+		 * Thread t = new Thread(ag); //Cria a linha de execuÃ§Ã£o t.start();
+		 * //Ativa a thread
 		 * 
 		 */
 	}
 
 }
 
-class Individuo implements Comparable<Individuo> {
+class IndividuoF6 implements Comparable<IndividuoF6> {
 
 	private double fitness = 0;
 	private String cromossomo;
+	private double[] XY;
 
-	public Individuo() {
+	public IndividuoF6() {
 	}
 
-	public Individuo(String cromossomo) {
+	public IndividuoF6(String cromossomo) {
 		this.cromossomo = cromossomo;
 	}
 
-	public Individuo(double fitness, String cromossomo) {
+	public IndividuoF6(double fitness, String cromossomo) {
 		super();
 		this.fitness = fitness;
 		this.cromossomo = cromossomo;
+	}
+
+	public void setValorReal(double[] XY) {
+		this.XY = XY;
+	}
+
+	public double[] getValorReal() {
+		return this.XY;
 	}
 
 	public double getFitness() {
@@ -430,12 +497,12 @@ class Individuo implements Comparable<Individuo> {
 	}
 
 	@Override
-	public int compareTo(Individuo outroIndividuo) {
+	public int compareTo(IndividuoF6 outroIndividuo) {
 		// TODO Auto-generated method stub
-		if (this.fitness < outroIndividuo.getFitness()) {
+		if (this.fitness > outroIndividuo.getFitness()) {
 			return -1;
 		}
-		if (this.fitness > outroIndividuo.getFitness()) {
+		if (this.fitness < outroIndividuo.getFitness()) {
 			return 1;
 		}
 		return 0;
