@@ -11,9 +11,6 @@ import java.util.Random;
 import java.util.Scanner;
 import java.util.stream.DoubleStream;
 
-import org.jfree.chart.JFreeChart;
-import org.jfree.data.category.DefaultCategoryDataset;
-
 class AG_ExtF6  {
 
 	public ArrayList<IndividuoF6> populacao;
@@ -275,6 +272,14 @@ class AG_ExtF6  {
 		return (0.5 + ((temp2 * temp2 - 0.5) / (temp3 * temp3)));
 	}
 
+	// Scaffer's F6 function Modificada
+	private double ScafferF6_M(double x, double y) {
+		double temp1 = x * x + y * y;
+		double temp2 = Math.sin(Math.sqrt(temp1));
+		double temp3 = 1.0 + 0.001 * temp1;
+		return (999.5 + ((temp2 * temp2 - 0.5) / (temp3 * temp3)));
+	}
+	
 	// Expanded Scaffer's F6 function
 	private double EScafferF6(double[] x) {
 		double sum = 0.0;
