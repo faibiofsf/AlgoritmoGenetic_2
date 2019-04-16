@@ -63,7 +63,7 @@ class AG_F6Elitismo {
 			fitnessPopulacao += (double) individuo.getFitness();
 		}
 
-		// Ranqueia população
+		// Ranqueia populaÃ§Ã£o
 		this.rank();
 
 		this.insereNoGrafico(fitnessPopulacao, 0);
@@ -90,7 +90,7 @@ class AG_F6Elitismo {
 					pai2 = this.selecionaPai();
 				}
 				// Cruzamento dos pais de acordo com a probabilidade e
-				// Mutação
+				// MutaÃ§Ã£o
 				// de acordo com probabilidade
 				if (random.nextDouble() <= this.probCruz) {
 					// Cruzamento
@@ -118,7 +118,7 @@ class AG_F6Elitismo {
 			// Ranqueia populacao
 			this.rank();
 			/*
-			 * System.out.println(""); System.out.println("Itera�ao: " + iteracao); double[]
+			 * System.out.println(""); System.out.println("Iteraçao: " + iteracao); double[]
 			 * XY = this.converteBinarioEmReal(melhorIndividuo.getCromossomo());
 			 * System.out.println("Melhor Individuo: " + melhorIndividuo.getCromossomo() +
 			 * ": " + XY[0] + " " + XY[1] + " : " + melhorIndividuo.getFitness());
@@ -191,7 +191,7 @@ class AG_F6Elitismo {
 		execMediaPop[iteracao] = fitnessPopulacao / this.populacao.size();
 	}
 
-	// Gerar população inicial de numeros reais
+	// Gerar populaÃ§Ã£o inicial de numeros reais
 	private ArrayList<IndividuoElitismo> populacaoInicialReais(int tamanhoPopulacao) {
 
 		ArrayList<IndividuoElitismo> populacaoInicial = new ArrayList<IndividuoElitismo>();
@@ -217,7 +217,7 @@ class AG_F6Elitismo {
 		return populacaoInicial;
 	}
 
-	// Gerar população inicial de numeros reais por arquivo
+	// Gerar populaÃ§Ã£o inicial de numeros reais por arquivo
 	private ArrayList<IndividuoElitismo> populacaoInicialReais(int tamanhoPopulacao, Scanner f) {
 
 		ArrayList<IndividuoElitismo> populacaoInicial = new ArrayList<IndividuoElitismo>();
@@ -336,7 +336,7 @@ class AG_F6Elitismo {
 		return filhos;
 	}
 
-	// Mutação
+	// MutaÃ§Ã£o
 	private void mutacao(IndividuoElitismo filho) {
 
 		char[] crom = filho.getCromossomo().toCharArray();
@@ -400,7 +400,7 @@ class AG_F6Elitismo {
 		return (sum);
 	}
 
-	// Ranqueamento da população
+	// Ranqueamento da populaÃ§Ã£o
 	public void rank() {
 
 		Collections.sort(this.populacao);
@@ -552,7 +552,9 @@ class AG_F6Elitismo {
 								f.close();
 							} else {
 								ag.populacao = ag.populacaoInicialReais(populacoes[0]);
-								AG_F6Elitismo.gravaPopulacaoInicial(ag.populacao, l, ag.seed);
+								AG_F6Elitismo.gravaPopulacaoInicial(ag.populacao, k, ag.seed);
+								if(k == numeroExecucoes-1) 
+									populacaoJaCriada = true;
 							}
 
 							ag.run();
@@ -617,12 +619,12 @@ class AG_F6Elitismo {
 		}
 	}
 
-	public static void gravaPopulacaoInicial(ArrayList<IndividuoElitismo> populacao, int l, long seed) {
+	public static void gravaPopulacaoInicial(ArrayList<IndividuoElitismo> populacao, int k, long seed) {
 
 		FileWriter arquivoPop = null;
 		PrintWriter gravarArqPop = null;
 		try {
-			arquivoPop = new FileWriter("AlgoritmoGenetic_2\\PopulacoInicial_" + l + " _Execucaoo.txt");
+			arquivoPop = new FileWriter("AlgoritmoGenetic_2\\PopulacoInicial_" + k + " _Execucaoo.txt");
 			gravarArqPop = new PrintWriter(arquivoPop);
 			gravarArqPop.println("Seed\t" + seed);
 			for (IndividuoElitismo individuo : populacao) {
