@@ -11,13 +11,13 @@ import java.util.Random;
 import java.util.Scanner;
 import java.util.stream.DoubleStream;
 
-class AG_F6Elitismo {
+class AG_F6Cruzamentos {
 
-	public ArrayList<IndividuoElitismo> populacao;
+	public ArrayList<IndividuoCruzamentos> populacao;
 	public long seed;
 	private double probCruz, probMut, percentualElitismo;
 	private int numeroIteracoes, tamanhoPopulacao, nBits, precisao, tipoElitismo;
-	public IndividuoElitismo melhorIndividuo, piorIndividuo;
+	public IndividuoCruzamentos melhorIndividuo, piorIndividuo;
 	public ArrayList<Integer> fitnessPorIteracoes;
 	public ArrayList<Double> mediaFitnessPopulacao;
 	private Random random;
@@ -27,14 +27,14 @@ class AG_F6Elitismo {
 	private boolean normalizado;
 
 	// Construtor Entrada
-	public AG_F6Elitismo(int tamanhoPopulacao, int numeroIteracoes, double probCruz, double probMut, int nBits, int precisao,
-			String avaliacao, long seed, double[] maxMinNorm, boolean normalizado, int tipoElitismo,
+	public AG_F6Cruzamentos(int tamanhoPopulacao, int numeroIteracoes, double probCruz, double probMut, int nBits,
+			int precisao, String avaliacao, long seed, double[] maxMinNorm, boolean normalizado, int tipoElitismo,
 			double percentualElitismo) {
 		this.numeroIteracoes = numeroIteracoes;
 		this.tamanhoPopulacao = tamanhoPopulacao;
 		this.probCruz = probCruz;
 		this.probMut = probMut;
-		this.melhorIndividuo = new IndividuoElitismo();
+		this.melhorIndividuo = new IndividuoCruzamentos();
 		this.fitnessPorIteracoes = new ArrayList<Integer>();
 		this.mediaFitnessPopulacao = new ArrayList<Double>();
 		this.nBits = nBits;
@@ -58,7 +58,7 @@ class AG_F6Elitismo {
 		double fitnessPopulacao = 0;
 
 		// Avaliar Populacao
-		for (IndividuoElitismo individuo : this.populacao) {
+		for (IndividuoCruzamentos individuo : this.populacao) {
 			avalia(individuo, avaliacao);
 			fitnessPopulacao += (double) individuo.getFitness();
 		}
@@ -72,12 +72,12 @@ class AG_F6Elitismo {
 
 		while (this.numeroIteracoes + 1 > iteracao) {
 
-			ArrayList<IndividuoElitismo> novaPopulacao = new ArrayList<IndividuoElitismo>();
+			ArrayList<IndividuoCruzamentos> novaPopulacao = new ArrayList<IndividuoCruzamentos>();
 
 			while (novaPopulacao.size() < populacao.size()) {
 
-				IndividuoElitismo pai1 = null;
-				IndividuoElitismo pai2 = null;
+				IndividuoCruzamentos pai1 = null;
+				IndividuoCruzamentos pai2 = null;
 
 				if (this.normalizado) {
 					// Selecinar cruzamento por Roleta Normalizada
@@ -94,7 +94,7 @@ class AG_F6Elitismo {
 				// de acordo com probabilidade
 				if (random.nextDouble() <= this.probCruz) {
 					// Cruzamento
-					IndividuoElitismo[] filhos = this.filhosCruzamento(pai1, pai2);
+					IndividuoCruzamentos[] filhos = this.filhosCruzamento(pai1, pai2);
 
 					// Mutacao de acordo com probabilidade
 					this.mutacao(filhos[0]);
@@ -110,7 +110,7 @@ class AG_F6Elitismo {
 
 			fitnessPopulacao = 0;
 			// Avaliar Nova Populacao
-			for (IndividuoElitismo individuo : this.populacao) {
+			for (IndividuoCruzamentos individuo : this.populacao) {
 				avalia(individuo, this.avaliacao);
 				fitnessPopulacao += (double) individuo.getFitness();
 			}
@@ -131,7 +131,7 @@ class AG_F6Elitismo {
 
 	}
 
-	private void elitismo(ArrayList<IndividuoElitismo> novaPopulacao) {
+	private void elitismo(ArrayList<IndividuoCruzamentos> novaPopulacao) {
 		if (tipoElitismo == 0) {
 			this.novaPopSemElitismo(novaPopulacao);
 		} else if (tipoElitismo == 1) {
@@ -141,35 +141,36 @@ class AG_F6Elitismo {
 		}
 	}
 
-	private void novaPopSemElitismo(ArrayList<IndividuoElitismo> novaPopulacao) {
+	private void novaPopSemElitismo(ArrayList<IndividuoCruzamentos> novaPopulacao) {
 		this.populacao = null;
-		this.populacao = (ArrayList<IndividuoElitismo>) novaPopulacao.clone();
+		this.populacao = (ArrayList<IndividuoCruzamentos>) novaPopulacao.clone();
 		novaPopulacao.clear();
 	}
 
-	private void novaPopElitista(ArrayList<IndividuoElitismo> novaPopulacao) {
-		IndividuoElitismo melhorIndividuo = new IndividuoElitismo(this.populacao.get(0).getFitness(),
+	private void novaPopElitista(ArrayList<IndividuoCruzamentos> novaPopulacao) {
+		IndividuoCruzamentos melhorIndividuo = new IndividuoCruzamentos(this.populacao.get(0).getFitness(),
 				this.populacao.get(0).getCromossomo());
 		this.populacao = null;
-		this.populacao = (ArrayList<IndividuoElitismo>) novaPopulacao.clone();
+		this.populacao = (ArrayList<IndividuoCruzamentos>) novaPopulacao.clone();
 		// Ranqueia populacao
 		this.rank();
 		this.populacao.set(this.populacao.size() - 1, melhorIndividuo);
 		novaPopulacao.clear();
 	}
 
-	private void novaPopEstadoEstacionario(ArrayList<IndividuoElitismo> novaPopulacao) {
+	private void novaPopEstadoEstacionario(ArrayList<IndividuoCruzamentos> novaPopulacao) {
 
 		int quantidade = (int) (this.percentualElitismo / 100) * this.populacao.size();
 
-		ArrayList<IndividuoElitismo> melhores = new ArrayList<IndividuoElitismo>();
+		ArrayList<IndividuoCruzamentos> melhores = new ArrayList<IndividuoCruzamentos>();
 
 		for (int i = 0; i < quantidade; i++) {
-			melhores.add(new IndividuoElitismo(this.populacao.get(i).getFitness(), this.populacao.get(i).getCromossomo()));
+			melhores.add(new IndividuoCruzamentos(this.populacao.get(i).getFitness(),
+					this.populacao.get(i).getCromossomo()));
 		}
 
 		this.populacao = null;
-		this.populacao = (ArrayList<IndividuoElitismo>) novaPopulacao.clone();
+		this.populacao = (ArrayList<IndividuoCruzamentos>) novaPopulacao.clone();
 		// Ranqueia populacao
 		this.rank();
 
@@ -192,9 +193,9 @@ class AG_F6Elitismo {
 	}
 
 	// Gerar populaÃ§Ã£o inicial de numeros reais
-	private ArrayList<IndividuoElitismo> populacaoInicialReais(int tamanhoPopulacao) {
+	private ArrayList<IndividuoCruzamentos> populacaoInicialReais(int tamanhoPopulacao) {
 
-		ArrayList<IndividuoElitismo> populacaoInicial = new ArrayList<IndividuoElitismo>();
+		ArrayList<IndividuoCruzamentos> populacaoInicial = new ArrayList<IndividuoCruzamentos>();
 
 		DoubleStream dsX = random.doubles(-100, 100);
 		double[] numerosX = dsX.limit(tamanhoPopulacao).toArray();
@@ -205,7 +206,7 @@ class AG_F6Elitismo {
 		for (int i = 0; i < tamanhoPopulacao; i++) {
 			String cromossomo = converteRealEmBinario(numerosX[i]) + converteRealEmBinario(numerosY[i]);
 
-			IndividuoElitismo individuo = new IndividuoElitismo(cromossomo);
+			IndividuoCruzamentos individuo = new IndividuoCruzamentos(cromossomo);
 			double[] XY = { numerosX[i], numerosY[i] };
 			individuo.setValorReal(XY);
 
@@ -218,9 +219,9 @@ class AG_F6Elitismo {
 	}
 
 	// Gerar populaÃ§Ã£o inicial de numeros reais por arquivo
-	private ArrayList<IndividuoElitismo> populacaoInicialReais(int tamanhoPopulacao, Scanner f) {
+	private ArrayList<IndividuoCruzamentos> populacaoInicialReais(int tamanhoPopulacao, Scanner f) {
 
-		ArrayList<IndividuoElitismo> populacaoInicial = new ArrayList<IndividuoElitismo>();
+		ArrayList<IndividuoCruzamentos> populacaoInicial = new ArrayList<IndividuoCruzamentos>();
 		// Para saltar a seed, primeira linha do arquivo
 		f.nextLine();
 
@@ -232,7 +233,7 @@ class AG_F6Elitismo {
 
 			String cromossomo = converteRealEmBinario(x) + converteRealEmBinario(y);
 
-			IndividuoElitismo individuo = new IndividuoElitismo(cromossomo);
+			IndividuoCruzamentos individuo = new IndividuoCruzamentos(cromossomo);
 			double[] XY = { x, y };
 			individuo.setValorReal(XY);
 
@@ -256,13 +257,13 @@ class AG_F6Elitismo {
 	}
 
 	// Selecao Roleta
-	private IndividuoElitismo selecionaPai() {
+	private IndividuoCruzamentos selecionaPai() {
 
 		int somatorio = 0;
 		double probabilidades = 0.0;
-		IndividuoElitismo pai = null;
+		IndividuoCruzamentos pai = null;
 
-		for (IndividuoElitismo individuo : this.populacao) {
+		for (IndividuoCruzamentos individuo : this.populacao) {
 			somatorio += individuo.getFitness();
 		}
 
@@ -270,9 +271,9 @@ class AG_F6Elitismo {
 		double ponteiro = random.nextDouble();
 
 		for (int i = 0; i < this.populacao.size(); i++) {
-			IndividuoElitismo individuo = this.populacao.get(i);
+			IndividuoCruzamentos individuo = this.populacao.get(i);
 			if (ponteiro <= ((double) individuo.getFitness() / (double) somatorio) + probabilidades) {
-				pai = new IndividuoElitismo(individuo.getFitness(), individuo.getCromossomo());
+				pai = new IndividuoCruzamentos(individuo.getFitness(), individuo.getCromossomo());
 				break;
 			} else {
 				probabilidades += ((double) individuo.getFitness() / (double) somatorio);
@@ -283,11 +284,11 @@ class AG_F6Elitismo {
 	}
 
 	// Selecao Normalizada
-	private IndividuoElitismo selecionaPai(double[] fitnessNormalizado) {
+	private IndividuoCruzamentos selecionaPai(double[] fitnessNormalizado) {
 
 		int somatorio = 0;
 		double probabilidades = 0.0;
-		IndividuoElitismo pai = null;
+		IndividuoCruzamentos pai = null;
 
 		for (int i = 0; i < this.populacao.size(); i++) {
 			somatorio += fitnessNormalizado[i];
@@ -297,9 +298,9 @@ class AG_F6Elitismo {
 		double ponteiro = random.nextDouble();
 
 		for (int i = 0; i < this.populacao.size(); i++) {
-			IndividuoElitismo individuo = this.populacao.get(i);
+			IndividuoCruzamentos individuo = this.populacao.get(i);
 			if (ponteiro <= ((double) fitnessNormalizado[i] / (double) somatorio) + probabilidades) {
-				pai = new IndividuoElitismo(individuo.getFitness(), individuo.getCromossomo());
+				pai = new IndividuoCruzamentos(individuo.getFitness(), individuo.getCromossomo());
 				break;
 			} else {
 				probabilidades += ((double) fitnessNormalizado[i] / (double) somatorio);
@@ -310,10 +311,10 @@ class AG_F6Elitismo {
 	}
 
 	// Cruzamento
-	private IndividuoElitismo[] filhosCruzamento(IndividuoElitismo pai1, IndividuoElitismo pai2) {
+	private IndividuoCruzamentos[] filhosCruzamento(IndividuoCruzamentos pai1, IndividuoCruzamentos pai2) {
 
-		IndividuoElitismo filho1 = new IndividuoElitismo();
-		IndividuoElitismo filho2 = new IndividuoElitismo();
+		IndividuoCruzamentos filho1 = new IndividuoCruzamentos();
+		IndividuoCruzamentos filho2 = new IndividuoCruzamentos();
 
 		// Random r = new Random();
 		int posicao = random.nextInt(pai1.getCromossomo().length());
@@ -331,13 +332,13 @@ class AG_F6Elitismo {
 		filho1.setCromossomo(crom1);
 		filho2.setCromossomo(crom2);
 
-		IndividuoElitismo[] filhos = { filho1, filho2 };
+		IndividuoCruzamentos[] filhos = { filho1, filho2 };
 
 		return filhos;
 	}
 
 	// MutaÃ§Ã£o
-	private void mutacao(IndividuoElitismo filho) {
+	private void mutacao(IndividuoCruzamentos filho) {
 
 		char[] crom = filho.getCromossomo().toCharArray();
 
@@ -358,7 +359,7 @@ class AG_F6Elitismo {
 	}
 
 	// Avaliacao
-	private void avalia(IndividuoElitismo individuo, String metodo) {
+	private void avalia(IndividuoCruzamentos individuo, String metodo) {
 		String cromossomo = individuo.getCromossomo();
 
 		double[] valoresXY = converteBinarioEmReal(cromossomo);
@@ -407,9 +408,9 @@ class AG_F6Elitismo {
 
 		// if (this.melhorIndividuo.getFitness() <
 		// populacao.get(0).getFitness()){
-		this.melhorIndividuo = new IndividuoElitismo(this.populacao.get(0).getFitness(),
+		this.melhorIndividuo = new IndividuoCruzamentos(this.populacao.get(0).getFitness(),
 				this.populacao.get(0).getCromossomo());
-		this.piorIndividuo = new IndividuoElitismo(this.populacao.get(this.populacao.size() - 1).getFitness(),
+		this.piorIndividuo = new IndividuoCruzamentos(this.populacao.get(this.populacao.size() - 1).getFitness(),
 				this.populacao.get(this.populacao.size() - 1).getCromossomo());
 		// }
 	}
@@ -481,137 +482,144 @@ class AG_F6Elitismo {
 		String[] avaliacao = { "ScafferF6" };
 		double[] maxMinNorm = { 500, 1 };
 		boolean[] normalizado = { false };
-		int[] tipoElitismo = { 0, 1, 2 };
+		// 0 - Sem elitismo, 1 - com elitismo, 2
+		int[] tipoElitismo = { 0 };
 		int percentualElitismo = 10;
+		// 0 - um ponto de corte, 1 - uniforme, 2 ou mais - multiplos pontos de corte
+		int[] tiposCruzamentos = { 0, 1, 2 };
 
-		for (int b = 0; b < tipoElitismo.length; b++) {
+		for (int d = 0; d < tiposCruzamentos.length; d++) {
 
-			// Executa com o fitness normalizado para cada populacao novamente e
-			// para cada execucao
-			for (int o = 0; o < normalizado.length; o++) {
-				// Populacao
-				for (int l = 0; l < numeroPopulacoes; l++) {
+			for (int b = 0; b < tipoElitismo.length; b++) {
 
-					for (int a = 0; a < avaliacao.length; a++) {
+				// Executa com o fitness normalizado para cada populacao novamente e
+				// para cada execucao
+				for (int o = 0; o < normalizado.length; o++) {
+					// Populacao
+					for (int l = 0; l < numeroPopulacoes; l++) {
 
-						FileWriter arqMediaInd = null, arqMelhorInd = null, arqMelhorPiorInd = null,
-								arqMediaMedias = null;
-						PrintWriter gravarArqMediaInd, gravarArqMelhorInd, gravarArqMelhorPiorInd, gravarArqMediaMedias;
-						try {
-							arqMediaInd = new FileWriter(
-									"AlgoritmoGenetic_2\\pop" + l + "\\MediaPopulaco_pop " + l + "_" + avaliacao[a]
-											+ "_Norm" + normalizado[o] + "_tipoElitismo" + tipoElitismo[b] + ".csv");
-							arqMelhorInd = new FileWriter(
-									"AlgoritmoGenetic_2\\pop" + l + "\\MelhorIndividuos_pop " + l + "_" + avaliacao[a]
-											+ "_Norm" + normalizado[o] + "_tipoElitismo" + tipoElitismo[b] + ".csv");
-							arqMelhorPiorInd = new FileWriter("AlgoritmoGenetic_2\\pop" + l
-									+ "\\MelhorMediaPiorIndividuos_pop " + l + "_" + avaliacao[a] + "_Norm"
-									+ normalizado[o] + "_tipoElitismo" + tipoElitismo[b] + ".csv");
-							arqMediaMedias = new FileWriter("AlgoritmoGenetic_2\\pop" + l
-									+ "\\Medias_MelhorMediaPiorIndividuos_pop " + l + "_" + avaliacao[a] + "_Norm"
-									+ normalizado[o] + "_tipoElitismo" + tipoElitismo[b] + ".csv");
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
+						for (int a = 0; a < avaliacao.length; a++) {
 
-						gravarArqMediaInd = new PrintWriter(arqMediaInd);
-						gravarArqMelhorInd = new PrintWriter(arqMelhorInd);
-						gravarArqMelhorPiorInd = new PrintWriter(arqMelhorPiorInd);
-						gravarArqMediaMedias = new PrintWriter(arqMediaMedias);
-
-						ArrayList<double[]> mediaPopExecs = new ArrayList<double[]>();
-						ArrayList<double[]> melhorIndExecs = new ArrayList<double[]>();
-						ArrayList<double[]> piorIndExecs = new ArrayList<double[]>();
-
-						double[] mediaMediaPopExecs = new double[nIteracoes + 1];
-						double[] mediaMelhorIndExecs = new double[nIteracoes + 1];
-						double[] mediaPiorIndExecs = new double[nIteracoes + 1];
-
-						// Execucoes da populacao
-						for (int k = 0; k < numeroExecucoes; k++) {
-							// 28 bits para representar os numero -100,100 com 6
-							// casas decimais
-							// quando converter para real, considerar o piso igual a
-							// -100
-							AG_F6Elitismo ag = new AG_F6Elitismo(populacoes[0], nIteracoes, cruzamentos[0], mutacoes[0], 28, 6,
-									avaliacao[a], seeds[k], maxMinNorm, normalizado[o], tipoElitismo[b],
-									percentualElitismo);
-
-							if (populacaoJaCriada) {
-								FileReader file = null;
-								try {
-									file = new FileReader(
-											"AlgoritmoGenetic_2\\PopulacoInicial_" + l + " _Execucaoo.txt");
-								} catch (FileNotFoundException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								}
-								Scanner f = new Scanner(file);
-								ag.populacao = ag.populacaoInicialReais(populacoes[0], f);
-								f.close();
-							} else {
-								ag.populacao = ag.populacaoInicialReais(populacoes[0]);
-								AG_F6Elitismo.gravaPopulacaoInicial(ag.populacao, k, ag.seed);
-								if(k == numeroExecucoes-1) 
-									populacaoJaCriada = true;
+							FileWriter arqMediaInd = null, arqMelhorInd = null, arqMelhorPiorInd = null,
+									arqMediaMedias = null;
+							PrintWriter gravarArqMediaInd, gravarArqMelhorInd, gravarArqMelhorPiorInd,
+									gravarArqMediaMedias;
+							try {
+								arqMediaInd = new FileWriter("AlgoritmoGenetic_2\\pop" + l + "\\MediaPopulaco_pop " + l
+										+ "_" + avaliacao[a] + "_Norm" + normalizado[o] + "_tipoElitismo"
+										+ tipoElitismo[b] + ".csv");
+								arqMelhorInd = new FileWriter("AlgoritmoGenetic_2\\pop" + l + "\\MelhorIndividuos_pop "
+										+ l + "_" + avaliacao[a] + "_Norm" + normalizado[o] + "_tipoElitismo"
+										+ tipoElitismo[b] + ".csv");
+								arqMelhorPiorInd = new FileWriter("AlgoritmoGenetic_2\\pop" + l
+										+ "\\MelhorMediaPiorIndividuos_pop " + l + "_" + avaliacao[a] + "_Norm"
+										+ normalizado[o] + "_tipoElitismo" + tipoElitismo[b] + ".csv");
+								arqMediaMedias = new FileWriter("AlgoritmoGenetic_2\\pop" + l
+										+ "\\Medias_MelhorMediaPiorIndividuos_pop " + l + "_" + avaliacao[a] + "_Norm"
+										+ normalizado[o] + "_tipoElitismo" + tipoElitismo[b] + ".csv");
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
 							}
 
-							ag.run();
+							gravarArqMediaInd = new PrintWriter(arqMediaInd);
+							gravarArqMelhorInd = new PrintWriter(arqMelhorInd);
+							gravarArqMelhorPiorInd = new PrintWriter(arqMelhorPiorInd);
+							gravarArqMediaMedias = new PrintWriter(arqMediaMedias);
 
-							mediaPopExecs.add(ag.execMediaPop);
-							melhorIndExecs.add(ag.execMelhosInd);
-							piorIndExecs.add(ag.execPioresInd);
+							ArrayList<double[]> mediaPopExecs = new ArrayList<double[]>();
+							ArrayList<double[]> melhorIndExecs = new ArrayList<double[]>();
+							ArrayList<double[]> piorIndExecs = new ArrayList<double[]>();
 
-						}
-						gravarArqMediaInd.printf("#iteracoes\tE1\tE2\tE3\tE4\tE5");
-						gravarArqMelhorInd.printf("#iteracoes\tE1\tE2\tE3\tE4\tE5");
-						gravarArqMelhorPiorInd.printf(
-								"#iteracoes\tMelhorE1\tMediaE1\tPiorE1\tMelhorE2\tMediaE2\tPiorE2\tMelhorE3\tMediaE3\tPiorE3\tMelhorE4\tMediaE4\tPiorE4\tMelhorE5\tMediaE5\tPiorE5");
-						gravarArqMediaMedias.printf("#iteracoes\tMediaMelhor\tMediaMedias\tMediaPior");
-						for (int i = 0; i < nIteracoes + 1; i++) {
-							gravarArqMediaInd.printf("\n" + i + "\t" + mediaPopExecs.get(0)[i] + "\t"
-									+ mediaPopExecs.get(1)[i] + "\t" + mediaPopExecs.get(2)[i] + "\t"
-									+ mediaPopExecs.get(3)[i] + "\t" + mediaPopExecs.get(4)[i]);
+							double[] mediaMediaPopExecs = new double[nIteracoes + 1];
+							double[] mediaMelhorIndExecs = new double[nIteracoes + 1];
+							double[] mediaPiorIndExecs = new double[nIteracoes + 1];
 
-							gravarArqMelhorInd.printf("\n" + i + "\t" + melhorIndExecs.get(0)[i] + "\t"
-									+ melhorIndExecs.get(1)[i] + "\t" + melhorIndExecs.get(2)[i] + "\t"
-									+ melhorIndExecs.get(3)[i] + "\t" + melhorIndExecs.get(4)[i]);
+							// Execucoes da populacao
+							for (int k = 0; k < numeroExecucoes; k++) {
+								// 28 bits para representar os numero -100,100 com 6
+								// casas decimais
+								// quando converter para real, considerar o piso igual a
+								// -100
+								AG_F6Cruzamentos ag = new AG_F6Cruzamentos(populacoes[0], nIteracoes, cruzamentos[0],
+										mutacoes[0], 28, 6, avaliacao[a], seeds[k], maxMinNorm, normalizado[o],
+										tipoElitismo[b], percentualElitismo);
 
-							gravarArqMelhorPiorInd.printf("\n" + i + "\t" + melhorIndExecs.get(0)[i] + "\t"
-									+ mediaPopExecs.get(0)[i] + "\t" + piorIndExecs.get(0)[i] + "\t"
-									+ melhorIndExecs.get(1)[i] + "\t" + mediaPopExecs.get(1)[i] + "\t"
-									+ piorIndExecs.get(1)[i] + "\t" + melhorIndExecs.get(2)[i] + "\t"
-									+ mediaPopExecs.get(2)[i] + "\t" + piorIndExecs.get(2)[i] + "\t"
-									+ melhorIndExecs.get(3)[i] + "\t" + mediaPopExecs.get(3)[i] + "\t"
-									+ piorIndExecs.get(3)[i] + "\t" + melhorIndExecs.get(4)[i] + "\t"
-									+ mediaPopExecs.get(4)[i] + "\t" + piorIndExecs.get(4)[i]);
+								if (populacaoJaCriada) {
+									FileReader file = null;
+									try {
+										file = new FileReader(
+												"AlgoritmoGenetic_2\\PopulacoInicial_" + l + " _Execucaoo.txt");
+									} catch (FileNotFoundException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+									Scanner f = new Scanner(file);
+									ag.populacao = ag.populacaoInicialReais(populacoes[0], f);
+									f.close();
+								} else {
+									ag.populacao = ag.populacaoInicialReais(populacoes[0]);
+									AG_F6Cruzamentos.gravaPopulacaoInicial(ag.populacao, k, ag.seed);
+									if (k == numeroExecucoes - 1)
+										populacaoJaCriada = true;
+								}
 
-							mediaMediaPopExecs[i] = (mediaPopExecs.get(0)[i] + mediaPopExecs.get(1)[i]
-									+ mediaPopExecs.get(2)[i] + mediaPopExecs.get(3)[i] + mediaPopExecs.get(4)[i])
-									/ numeroExecucoes;
-							mediaMelhorIndExecs[i] = (melhorIndExecs.get(0)[i] + melhorIndExecs.get(1)[i]
-									+ melhorIndExecs.get(2)[i] + melhorIndExecs.get(3)[i] + melhorIndExecs.get(4)[i])
-									/ numeroExecucoes;
-							mediaPiorIndExecs[i] = (piorIndExecs.get(0)[i] + piorIndExecs.get(1)[i]
-									+ piorIndExecs.get(2)[i] + piorIndExecs.get(3)[i] + piorIndExecs.get(4)[i])
-									/ numeroExecucoes;
+								ag.run();
 
-							gravarArqMediaMedias.printf("\n" + i + "\t" + mediaMelhorIndExecs[i] + "\t"
-									+ mediaMediaPopExecs[i] + "\t" + mediaPiorIndExecs[i]);
-						}
+								mediaPopExecs.add(ag.execMediaPop);
+								melhorIndExecs.add(ag.execMelhosInd);
+								piorIndExecs.add(ag.execPioresInd);
 
-						try {
+							}
+							gravarArqMediaInd.printf("#iteracoes\tE1\tE2\tE3\tE4\tE5");
+							gravarArqMelhorInd.printf("#iteracoes\tE1\tE2\tE3\tE4\tE5");
+							gravarArqMelhorPiorInd.printf(
+									"#iteracoes\tMelhorE1\tMediaE1\tPiorE1\tMelhorE2\tMediaE2\tPiorE2\tMelhorE3\tMediaE3\tPiorE3\tMelhorE4\tMediaE4\tPiorE4\tMelhorE5\tMediaE5\tPiorE5");
+							gravarArqMediaMedias.printf("#iteracoes\tMediaMelhor\tMediaMedias\tMediaPior");
+							for (int i = 0; i < nIteracoes + 1; i++) {
+								gravarArqMediaInd.printf("\n" + i + "\t" + mediaPopExecs.get(0)[i] + "\t"
+										+ mediaPopExecs.get(1)[i] + "\t" + mediaPopExecs.get(2)[i] + "\t"
+										+ mediaPopExecs.get(3)[i] + "\t" + mediaPopExecs.get(4)[i]);
 
-							gravarArqMelhorInd.close();
-							arqMelhorInd.close();
-							gravarArqMediaInd.close();
-							arqMediaInd.close();
-							gravarArqMelhorPiorInd.close();
-							arqMelhorPiorInd.close();
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+								gravarArqMelhorInd.printf("\n" + i + "\t" + melhorIndExecs.get(0)[i] + "\t"
+										+ melhorIndExecs.get(1)[i] + "\t" + melhorIndExecs.get(2)[i] + "\t"
+										+ melhorIndExecs.get(3)[i] + "\t" + melhorIndExecs.get(4)[i]);
+
+								gravarArqMelhorPiorInd.printf("\n" + i + "\t" + melhorIndExecs.get(0)[i] + "\t"
+										+ mediaPopExecs.get(0)[i] + "\t" + piorIndExecs.get(0)[i] + "\t"
+										+ melhorIndExecs.get(1)[i] + "\t" + mediaPopExecs.get(1)[i] + "\t"
+										+ piorIndExecs.get(1)[i] + "\t" + melhorIndExecs.get(2)[i] + "\t"
+										+ mediaPopExecs.get(2)[i] + "\t" + piorIndExecs.get(2)[i] + "\t"
+										+ melhorIndExecs.get(3)[i] + "\t" + mediaPopExecs.get(3)[i] + "\t"
+										+ piorIndExecs.get(3)[i] + "\t" + melhorIndExecs.get(4)[i] + "\t"
+										+ mediaPopExecs.get(4)[i] + "\t" + piorIndExecs.get(4)[i]);
+
+								mediaMediaPopExecs[i] = (mediaPopExecs.get(0)[i] + mediaPopExecs.get(1)[i]
+										+ mediaPopExecs.get(2)[i] + mediaPopExecs.get(3)[i] + mediaPopExecs.get(4)[i])
+										/ numeroExecucoes;
+								mediaMelhorIndExecs[i] = (melhorIndExecs.get(0)[i] + melhorIndExecs.get(1)[i]
+										+ melhorIndExecs.get(2)[i] + melhorIndExecs.get(3)[i]
+										+ melhorIndExecs.get(4)[i]) / numeroExecucoes;
+								mediaPiorIndExecs[i] = (piorIndExecs.get(0)[i] + piorIndExecs.get(1)[i]
+										+ piorIndExecs.get(2)[i] + piorIndExecs.get(3)[i] + piorIndExecs.get(4)[i])
+										/ numeroExecucoes;
+
+								gravarArqMediaMedias.printf("\n" + i + "\t" + mediaMelhorIndExecs[i] + "\t"
+										+ mediaMediaPopExecs[i] + "\t" + mediaPiorIndExecs[i]);
+							}
+
+							try {
+
+								gravarArqMelhorInd.close();
+								arqMelhorInd.close();
+								gravarArqMediaInd.close();
+								arqMediaInd.close();
+								gravarArqMelhorPiorInd.close();
+								arqMelhorPiorInd.close();
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
 						}
 					}
 				}
@@ -619,7 +627,7 @@ class AG_F6Elitismo {
 		}
 	}
 
-	public static void gravaPopulacaoInicial(ArrayList<IndividuoElitismo> populacao, int k, long seed) {
+	public static void gravaPopulacaoInicial(ArrayList<IndividuoCruzamentos> populacao, int k, long seed) {
 
 		FileWriter arquivoPop = null;
 		PrintWriter gravarArqPop = null;
@@ -627,7 +635,7 @@ class AG_F6Elitismo {
 			arquivoPop = new FileWriter("AlgoritmoGenetic_2\\PopulacoInicial_" + k + " _Execucaoo.txt");
 			gravarArqPop = new PrintWriter(arquivoPop);
 			gravarArqPop.println("Seed\t" + seed);
-			for (IndividuoElitismo individuo : populacao) {
+			for (IndividuoCruzamentos individuo : populacao) {
 				gravarArqPop.println(individuo.getValorReal()[0] + "\t" + String.valueOf(individuo.getValorReal()[1]));
 			}
 
@@ -643,20 +651,20 @@ class AG_F6Elitismo {
 
 }
 
-class IndividuoElitismo implements Comparable<IndividuoElitismo> {
+class IndividuoCruzamentos implements Comparable<IndividuoCruzamentos> {
 
 	private double fitness = 0;
 	private String cromossomo;
 	private double[] XY;
 
-	public IndividuoElitismo() {
+	public IndividuoCruzamentos() {
 	}
 
-	public IndividuoElitismo(String cromossomo) {
+	public IndividuoCruzamentos(String cromossomo) {
 		this.cromossomo = cromossomo;
 	}
 
-	public IndividuoElitismo(double fitness, String cromossomo) {
+	public IndividuoCruzamentos(double fitness, String cromossomo) {
 		super();
 		this.fitness = fitness;
 		this.cromossomo = cromossomo;
@@ -687,7 +695,7 @@ class IndividuoElitismo implements Comparable<IndividuoElitismo> {
 	}
 
 	@Override
-	public int compareTo(IndividuoElitismo outroIndividuo) {
+	public int compareTo(IndividuoCruzamentos outroIndividuo) {
 		// TODO Auto-generated method stub
 		if (this.fitness > outroIndividuo.getFitness()) {
 			return -1;
